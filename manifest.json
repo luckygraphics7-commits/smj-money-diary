@@ -1,0 +1,17 @@
+{
+  "name": "SMJ Money Diary",
+  "short_name": "SMJ Money",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f5f7f6",
+  "theme_color": "#087a59",
+  "description": "Simple personal income, expense and saving diary by SMJ Group.",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
