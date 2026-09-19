@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#087a59">
+<title>SMJ Money Diary</title>
+<style>
+:root{--g:#087a59;--g2:#075f46;--bg:#f4f7f5;--card:#fff;--text:#17352b;--muted:#6d7d77;--red:#e5484d;--blue:#2674d9;--orange:#f39a20;--purple:#7a4ed8}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text)}
+.app{max-width:480px;margin:auto;min-height:100vh;background:var(--bg);padding-bottom:76px}
+header{background:linear-gradient(135deg,var(--g2),var(--g));color:white;padding:18px 18px 16px;position:sticky;top:0;z-index:5}
+header h1{margin:0;font-size:21px}header p{margin:3px 0 0;opacity:.85;font-size:12px}
+main{padding:14px}.month{display:flex;justify-content:space-between;align-items:center;margin:3px 2px 12px;font-weight:700}
+button{border:0;border-radius:12px;padding:11px 14px;font-weight:700;cursor:pointer}
+.month button{background:white;color:var(--g);padding:7px 11px}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}.card{padding:13px;border-radius:14px;color:white;box-shadow:0 2px 8px #0000000b}.card small{display:block;opacity:.9}.card b{font-size:20px;display:block;margin-top:3px}.income{background:#07945f}.expense{background:var(--red)}.saving{background:var(--blue)}.balance{background:var(--orange)}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:13px 0}.actions button{color:white}.ai{background:#07945f}.ae{background:var(--red)}.as{background:var(--purple)}.ar{background:#2468bd}
+.section{background:var(--card);border-radius:16px;padding:14px;margin-top:12px;box-shadow:0 2px 9px #00000008}.section h2{font-size:16px;margin:0 0 10px}
+.tx{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid #edf1ef}.tx:last-child{border:0}.tx small{display:block;color:var(--muted)}.plus{color:#078657;font-weight:800}.minus{color:var(--red);font-weight:800}
+nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(480px,100%);background:white;border-top:1px solid #e5ebe8;display:grid;grid-template-columns:repeat(4,1fr);z-index:8}nav button{background:white;border-radius:0;color:#6b7773;font-size:11px;padding:10px 3px}nav button.active{color:var(--g)}
+.view{display:none}.view.active{display:block}
+form label{display:block;font-size:12px;color:var(--muted);margin:10px 0 5px}input,select,textarea{width:100%;padding:12px;border:1px solid #dce5e1;border-radius:10px;font:inherit;background:white}textarea{min-height:70px}.save{width:100%;margin-top:14px;background:var(--g);color:white}
+.tabs{display:flex;gap:6px;margin-bottom:8px}.tabs button{background:#edf3f0;color:var(--g);padding:8px 10px}.tabs button.on{background:var(--g);color:white}
+.category-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.cat{padding:12px 5px;text-align:center;background:#f0f5f2;border-radius:12px;font-size:12px}.cat span{display:block;font-size:23px;margin-bottom:3px}
+.bar{height:10px;background:#e8efec;border-radius:99px;overflow:hidden}.fill{height:100%;background:var(--g);border-radius:99px}
+.row{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:12px 0}.muted{color:var(--muted);font-size:12px}
+.notice{background:#e8f6f0;padding:12px;border-radius:12px;font-size:13px;margin-top:10px}
+.empty{text-align:center;color:var(--muted);padding:28px 10px}
+h3{margin:0 0 4px;font-size:15px}
+</style>
+</head>
+<body>
+<div class="app">
+<header><h1>SMJ Money Diary</h1><p>Har Rupiya Ka Hisaab • Behtar Kal Ke Liye</p></header>
+
+<main>
+<section id="home" class="view active">
+  <div class="month"><button onclick="shiftMonth(-1)">‹</button><span id="monthLabel"></span><button onclick="shiftMonth(1)">›</button></div>
+  <div class="cards">
+    <div class="card income"><small>💰 Total Income</small><b id="incomeTotal">₹0</b></div>
+    <div class="card expense"><small>💸 Total Expense</small><b id="expenseTotal">₹0</b></div>
+    <div class="card saving"><small>🏦 Total Saving</small><b id="savingTotal">₹0</b></div>
+    <div class="card balance"><small>💵 Balance</small><b id="balanceTotal">₹0</b></div>
+  </div>
+  <div class="actions">
+    <button class="ai" onclick="openForm('income')">＋ Add Income</button>
+    <button class="ae" onclick="openForm('expense')">− Add Expense</button>
+    <button class="as" onclick="openForm('saving')">💰 Add Saving</button>
+    <button class="ar" onclick="show('report')">📊 Monthly Report</button>
+  </div>
+  <div class="section"><h2>Recent Transactions</h2><div id="recent"></div></div>
+  <div class="section"><h2>September / October Starter</h2><div class="notice">October se proper budget follow karein. Salary ₹14,500 aur fixed EMI ₹9,000 ko app mein budget ke saath track karein.</div></div>
+</section>
+
+<section id="transactions" class="view">
+  <div class="section"><h2>Transactions</h2>
+    <div class="tabs"><button class="on" onclick="filterTx('all',this)">All</button><button onclick="filterTx('income',this)">Income</button><button onclick="filterTx('expense',this)">Expense</button><button onclick="filterTx('saving',this)">Saving</button></div>
+    <div id="txList"></div>
+  </div>
+</section>
+
+<section id="report" class="view">
+  <div class="section"><h2>Monthly Report</h2><div class="month"><button onclick="shiftMonth(-1)">‹</button><span id="reportMonth"></span><button onclick="shiftMonth(1)">›</button></div>
+    <div class="row"><span>Total Income</span><b id="rIncome"></b></div>
+    <div class="row"><span>Total Expense</span><b id="rExpense"></b></div>
+    <div class="row"><span>Total Saving</span><b id="rSaving"></b></div>
+    <div class="row"><span>Balance</span><b id="rBalance"></b></div>
+  </div>
+  <div class="section"><h2>Category-wise Expense</h2><div id="catReport"></div></div>
+  <div class="section"><h2>Saving Progress</h2><div class="row"><span>Target</span><b id="targetText">₹50,000</b></div><div class="bar"><div id="targetBar" class="fill" style="width:0%"></div></div><p class="muted" id="targetProgress"></p></div>
+</section>
+
+<section id="settings" class="view">
+  <div class="section"><h2>Budget & Settings</h2>
+    <label>Monthly Saving Target</label><input id="targetInput" type="number" min="0" step="100">
+    <label>Monthly CNG / Petrol Budget</label><input id="travelBudget" type="number" min="0" step="100">
+    <label>Monthly Ghar Budget</label><input id="gharBudget" type="number" min="0" step="100">
+    <button class="save" onclick="saveSettings()">Save Settings</button>
+    <div class="notice">Data isi device/browser mein save hota hai. App ko uninstall/clear karne se pehle export/backup feature add karna future version mein useful rahega.</div>
+  </div>
+  <div class="section"><h2>Expense Categories</h2><div class="category-grid" id="cats"></div></div>
+  <div class="section"><h2>Extra Income Rule</h2><p>Extra income ka default plan: <b>50% Saving • 30% Future Expenses • 20% Personal Use</b>.</p></div>
+</section>
+
+<section id="form" class="view">
+  <div class="section"><h2 id="formTitle"></h2>
+    <form onsubmit="addTx(event)">
+      <label>Date</label><input id="fDate" type="date" required>
+      <label id="sourceLabel">Source</label><select id="fType"></select>
+      <label>Amount (₹)</label><input id="fAmount" type="number" min="1" step="1" required>
+      <label>Note (optional)</label><textarea id="fNote" placeholder="Example: Monthly salary / 1 litre doodh"></textarea>
+      <button class="save" type="submit">Save</button>
+    </form>
+  </div>
+</section>
+</main>
+<nav>
+<button class="active" onclick="show('home',this)">⌂<br>Home</button>
+<button onclick="show('transactions',this)">☷<br>Transactions</button>
+<button onclick="show('report',this)">▥<br>Report</button>
+<button onclick="show('settings',this)">⋯<br>More</button>
+</nav>
+</div>
+
+<script>
+const cats=[
+ ['🏠','EMI'],['🥛','Doodh'],['💧','Paani'],['🛒','Rashan'],['⛽','CNG / Petrol'],
+ ['📱','Mobile'],['❤️','Medical'],['👤','Personal'],['•••','Other']
+];
+let data=JSON.parse(localStorage.getItem('smj_money_diary')||'[]');
+let settings=JSON.parse(localStorage.getItem('smj_money_settings')||'{"target":50000,"travel":2500,"ghar":7000}');
+let current=new Date(); current.setDate(1); let currentFilter='all';
+
+const rupee=n=>'₹'+Math.round(n).toLocaleString('en-IN');
+const monthKey=d=>d.slice(0,7);
+function fmtMonth(){return current.toLocaleDateString('en-IN',{month:'long',year:'numeric'})}
+function monthData(){let k=current.toISOString().slice(0,7);return data.filter(x=>x.date.slice(0,7)===k)}
+function totals(){
+ let a=monthData(), inc=a.filter(x=>x.kind==='income').reduce((s,x)=>s+x.amount,0);
+ let exp=a.filter(x=>x.kind==='expense').reduce((s,x)=>s+x.amount,0);
+ let sav=a.filter(x=>x.kind==='saving').reduce((s,x)=>s+x.amount,0);
+ return {inc,exp,sav,bal:inc-exp-sav};
+}
+function render(){
+ document.getElementById('monthLabel').textContent=fmtMonth();document.getElementById('reportMonth').textContent=fmtMonth();
+ let t=totals(); incomeTotal.textContent=rupee(t.inc);expenseTotal.textContent=rupee(t.exp);savingTotal.textContent=rupee(t.sav);balanceTotal.textContent=rupee(t.bal);
+ rIncome.textContent=rupee(t.inc);rExpense.textContent=rupee(t.exp);rSaving.textContent=rupee(t.sav);rBalance.textContent=rupee(t.bal);
+ let arr=monthData().slice().sort((a,b)=>b.date.localeCompare(a.date));
+ recent.innerHTML=arr.slice(0,7).map(txHTML).join('')||'<div class="empty">Abhi koi transaction nahi.</div>';
+ txList.innerHTML=arr.filter(x=>currentFilter==='all'||x.kind===currentFilter).map(txHTML).join('')||'<div class="empty">No transactions.</div>';
+ let by={}; monthData().filter(x=>x.kind==='expense').forEach(x=>by[x.type]=(by[x.type]||0)+x.amount);
+ let total=t.exp;catReport.innerHTML=Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="row"><div style="flex:1"><b>${k}</b><div class="bar"><div class="fill" style="width:${total?Math.min(100,v/total*100):0}%"></div></div></div><b>${rupee(v)}</b></div>`).join('')||'<div class="empty">Expense data nahi hai.</div>';
+ let pct=Math.min(100,settings.target? t.sav/settings.target*100:0);targetBar.style.width=pct+'%';targetText.textContent=rupee(settings.target);targetProgress.textContent=rupee(t.sav)+' / '+rupee(settings.target)+' saved ('+Math.round(pct)+'%)';
+}
+function txHTML(x){let sign=x.kind==='income'?'+':x.kind==='saving'?'−':'−';let cls=x.kind==='income'?'plus':'minus';return `<div class="tx"><div><b>${x.type}</b><small>${x.date}${x.note?' • '+x.note:''}</small></div><span class="${cls}">${sign}${rupee(x.amount)}</span></div>`}
+function show(id,btn){
+ document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active');
+ if(btn){document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));btn.classList.add('active')}
+ render();
+}
+function shiftMonth(n){current.setMonth(current.getMonth()+n);render()}
+function openForm(kind){
+ document.getElementById('form').classList.add('active');document.querySelectorAll('.view').forEach(v=>{if(v.id!=='form')v.classList.remove('active')});
+ fDate.value=new Date().toISOString().slice(0,10); fAmount.value=''; fNote.value='';
+ let sel=document.getElementById('fType'); sel.innerHTML='';
+ let opts=kind==='expense'?cats.map(x=>x[1]):kind==='income'?['Salary','Extra Income','Business','Other']:['Salary Saving','Extra Income Saving','Other Saving'];
+ opts.forEach(o=>{let op=document.createElement('option');op.value=o;op.textContent=o;sel.appendChild(op)});
+ document.getElementById('formTitle').textContent=kind==='income'?'Add Income':kind==='expense'?'Add Expense':'Add Saving';
+ document.getElementById('sourceLabel').textContent=kind==='expense'?'Category':kind==='income'?'Income Source':'Saving Type';
+ sel.dataset.kind=kind;
+}
+function addTx(e){e.preventDefault();let kind=fType.dataset.kind;data.push({id:Date.now(),date:fDate.value,kind,type:fType.value,amount:Number(fAmount.value),note:fNote.value.trim()});localStorage.setItem('smj_money_diary',JSON.stringify(data));current=new Date(fDate.value);current.setDate(1);show('home')}
+function filterTx(f,b){currentFilter=f;document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('on'));b.classList.add('on');render()}
+function saveSettings(){settings.target=Number(targetInput.value)||0;settings.travel=Number(travelBudget.value)||0;settings.ghar=Number(gharBudget.value)||0;localStorage.setItem('smj_money_settings',JSON.stringify(settings));alert('Settings saved');render()}
+catsEl=document.getElementById('cats');catsEl.innerHTML=cats.map(c=>`<div class="cat"><span>${c[0]}</span>${c[1]}</div>`).join('');
+targetInput.value=settings.target;travelBudget.value=settings.travel;gharBudget.value=settings.ghar;
+render();
+</script>
+</body>
+</html>
