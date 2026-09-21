@@ -1,11 +1,14 @@
 {
   "name":"SMJ Money Diary",
-  "short_name":"SMJ Money Diary",
+  "short_name":"SMJ Money",
   "start_url":"./",
+  "scope":"./",
   "display":"standalone",
+  "display_override":["window-controls-overlay","standalone"],
   "background_color":"#f4f7f5",
   "theme_color":"#087a59",
-  "description":"Secure personal income, expense and saving diary",
+  "description":"Private personal finance diary for income, expenses, savings and cash/account balances.",
+  "categories":["finance","productivity"],
   "icons":[
     {"src":"icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
     {"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
